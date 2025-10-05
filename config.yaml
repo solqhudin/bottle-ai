@@ -1,0 +1,89 @@
+# =========================
+# Camera & Calibration
+# =========================
+camera_index: 0
+cap_width: 1280
+cap_height: 720
+
+# Printed checkerboard you use now: 7x5 squares, 15 mm each
+pattern_cols: 7            # จำนวน "ช่องทั้งหมด" แนวนอนของกระดาน
+pattern_rows: 5            # จำนวน "ช่องทั้งหมด" แนวตั้งของกระดาน
+square_mm: 13.0            # ขนาด 1 ช่องเป็น mm (คุณวัดได้ 15 มม.)
+
+# =========================
+# YOLO Detection
+# =========================
+# ใช้โมเดลตรวจจับแบบ "detect" เท่านั้น
+# - ถ้ายังไม่มีโมเดลที่ฟายน์จูนเอง ให้ใช้ yolov8n.pt (COCO) ไปก่อน
+# - ถ้าคุณมีโมเดล detect ของตัวเองแล้ว (1 คลาส pet_bottle) ให้ชี้พาธไฟล์ best.pt ได้
+# yolo_model: C:/bottle-ai/models/yolov8n.pt
+yolo_model: C:/bottle-ai/runs/detect/train/weights/best.pt
+yolo_imgsz: 640
+yolo_conf: 0.35
+
+# yolo_imgsz: 640
+# yolo_conf: 0.4
+# accept_any_class: true
+# bottle_class_id: 0        # COCO 'bottle'
+
+# ระบุคลาสขวดของโมเดล:
+# - ถ้าใช้ COCO (yolov8n.pt) ให้เป็น 39 (class 'bottle')
+# - ถ้าใช้โมเดลที่เทรนเองเป็นคลาสเดียว (pet_bottle) ให้ตั้งเป็น 0
+bottle_class_id: 0
+accept_any_class: false     # true = รับทุกคลาสเป็น "ขวด" (ใช้เฉพาะกรณีจำเป็น)
+
+# =========================
+# Geometry filters (ช่วยกันกรอบหลอก/เล็กเกิน)
+# =========================
+min_area_px: 4000           # พื้นที่กรอบขั้นต่ำ (พิกเซล)
+min_ar: 1.3                 # อัตราส่วน h/w ขั้นต่ำ (ขวดควรสูงกว่า)
+
+# =========================
+# Smoothing (กันแกว่งของความสูง)
+# =========================
+median_N: 5
+
+# =========================
+# Size mapping (mm -> ml)
+# ปรับช่วงให้อิงกับขวดจริงของคุณภายหลัง (ทดสอบ ~20–30 ใบ/ไซส์)
+# =========================
+size_thresholds_mm:
+  - [185, 220, 500]
+  - [221, 238, 600]
+  - [239, 262, 750]
+  - [263, 288, 1000]
+  - [295, 326, 1500]
+  - [327, 360, 2000]
+
+# (ตัวช่วย cross-check ความกว้างของขวดต่อไซส์ — ปรับทีหลังได้ถ้าเข้มเกิน)
+expected_width_mm:
+  "500":  [60,  72]
+  "600":  [62,  76]
+  "750":  [65,  80]
+  "1000": [70,  85]
+  "1500": [82,  96]
+  "2000": [88, 105]
+
+# =========================
+# Points by size (แต้มต่อไซส์)
+# =========================
+points_by_size:
+  "500":  1
+  "600":  2
+  "750":  3
+  "1000": 4
+  "1500": 5
+  "2000": 6
+
+send_cooldown: 1.5
+queue_path: "C:/bottle-ai/outputs/offline_queue.json"
+
+# --- KIOSK API: ปรับให้เข้ากับ /recycle-api ของคุณ ---
+api_base: "http://127.0.0.1/recycle-api"
+device_api_key: "DEVAPIKEY000000000000000000000000000000"
+session_ttl: 30
+
+# routes (แก้ชื่อให้ตรง controller/action ของคุณได้)
+start_session_route: "device/start_session"
+record_route:        "device/record_bottle"
+points_summary_route: "device/points_summary"
